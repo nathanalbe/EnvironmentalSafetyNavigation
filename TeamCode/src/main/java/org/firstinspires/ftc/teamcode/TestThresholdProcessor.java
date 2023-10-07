@@ -21,43 +21,31 @@ public class TestThresholdProcessor implements VisionProcessor {
 
     public ColorSpace colorSpace = ColorSpace.HSV;
 
-    // Mask
     private Mat mat = new Mat();
-
-    // Return - objects
     private Mat ret = new Mat();
 
-    // Minimum area on the screen for box
     public int rect_threshold = 1000;
 
-    // Data logger
     private Telemetry telemetry = null;
 
-    // Sets the data logger
     public TestThresholdProcessor(Telemetry telemetry) {
         this.telemetry = telemetry;
     }
 
-    // Dont know
     @Override
     public void init(int width, int height, CameraCalibration calibration) {
     }
 
-    // Get the frame, and gets the time.
     @Override
     public Object processFrame(Mat frame, long captureTimeNanos) {
-        // Frees the memory of the frame, from frame
         ret.release();
-
-        // New Frame with the size
         ret = new Mat();
 
         try {
-            // Gets the center of the x, and a bit above the bottom of the screen
             pov_x = frame.width() / 2;
             pov_y = frame.height() - 5;
 
-            // convert RGB to HSV
+            // convert RBB to Lab
             Imgproc.cvtColor(frame, mat, colorSpace.cvtCode);
 
             // convert to b/w by removing all colors not in range
@@ -106,7 +94,7 @@ public class TestThresholdProcessor implements VisionProcessor {
             // Draw circle in center of frame
             Imgproc.circle(ret, new Point(pov_x, pov_y), 5, new Scalar(255, 0, 0), 5);
 
-            // Draw line from pov_x/pov_y to each center
+            // Draw line from pov to each center
             Point2d pov = new Point2d(pov_x, pov_y);
             ArrayList<DistanceRep> distances = new ArrayList<>();
             for (Point2d center : centers) {
