@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
-//Sanjay so kewl
+
+import org.opencv.core.Point;
+
 class Point2d {
     public double x;
     public double y;
@@ -23,5 +25,29 @@ class Point2d {
 
     public double get_y() {
         return this.y;
+    }
+
+    public Point2d add(Point2d other) {
+        return new Point2d(this.x + other.x, this.y + other.y);
+    }
+
+    public Point2d sub(Point2d other) {
+        return new Point2d(this.x - other.x, this.y - other.y);
+    }
+
+    public Point2d mul(double scalar) {
+        return new Point2d(this.x * scalar, this.y * scalar);
+    }
+
+    public Point2d div(double scalar) {
+        return new Point2d(this.x / scalar, this.y / scalar);
+    }
+
+    public double distance (Point2d other) {
+        return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2));
+    }
+
+    public Point toPoint() {
+        return new Point(this.x, this.y);
     }
 }

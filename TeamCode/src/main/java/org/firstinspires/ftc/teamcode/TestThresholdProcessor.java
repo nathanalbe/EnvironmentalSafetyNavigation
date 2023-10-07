@@ -13,7 +13,6 @@ import org.opencv.core.*;
 import java.util.ArrayList;
 
 public class TestThresholdProcessor implements VisionProcessor {
-
     public Scalar lower = new Scalar(0, 137.4, 164.3);
     public Scalar upper = new Scalar(255, 172.8, 255);
 
@@ -41,7 +40,6 @@ public class TestThresholdProcessor implements VisionProcessor {
         ret = new Mat();
 
         try {
-            // Set center x and y to center of frame
             pov_x = frame.width() / 2;
             pov_y = frame.height() / 2 + 220;
 
