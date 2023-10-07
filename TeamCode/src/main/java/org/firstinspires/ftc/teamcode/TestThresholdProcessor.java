@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 public class TestThresholdProcessor implements VisionProcessor {
-    public Scalar lower = new Scalar(29.8, 119, 36.8);
-    public Scalar upper = new Scalar(46.8, 229.5, 181.3);
+    public Scalar lower = new Scalar(28.3, 77.9, 0.0);
+    public Scalar upper = new Scalar(51.0, 255.0, 255.0);
 
     public int pov_x = 0;
     public int pov_y = 0;
@@ -65,7 +65,7 @@ public class TestThresholdProcessor implements VisionProcessor {
             Mat hierarchy = new Mat();
             Imgproc.findContours(mask, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
-            telemetry.addData("Contours", contours.size());
+            //telemetry.addData("Contours", contours.size());
 
             // Create a list of each bounding rect
             ArrayList<Rect> rects = new ArrayList<>();
@@ -85,7 +85,7 @@ public class TestThresholdProcessor implements VisionProcessor {
             ArrayList<DistanceRep> closest_points = new ArrayList<>();
             for (int i = 0; i < rects.size(); i++) {
                 //Imgproc.rectangle(ret, rects.get(i), new Scalar(0, 255, 0), 2);
-                telemetry.addData(i + ": (" + rects.get(i).x + ", " + rects.get(i).y + "), Area: " + rects.get(i).area(), "");
+                //telemetry.addData(i + ": (" + rects.get(i).x + ", " + rects.get(i).y + "), Area: " + rects.get(i).area(), "");
                 //int x = rects.get(i).x + rects.get(i).width;
                 //int y = rects.get(i).y + rects.get(i).height;
 
@@ -141,6 +141,7 @@ public class TestThresholdProcessor implements VisionProcessor {
                 else if (i == 2) // 3rd closest
                     color = new Scalar(0, 0, 255);
                 Imgproc.line(ret, point.get_start_point().toPoint(), point.get_end_point().toPoint(), color, 2);
+                telemetry.addData(i + ": " + point.get_distance(), "");
             }
 
             ret.copyTo(frame);
