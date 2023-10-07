@@ -11,12 +11,32 @@ public class Point2d {
         this.y = y;
     }
 
+    public Point2d() {
+        this.x = 0;
+        this.y = 0;
+    }
+
+    public Point2d(Point p) {
+        x = p.x;
+        y = p.y;
+    }
+
     public void set_x(double x) {
         this.x = x;
     }
 
     public void set_y(double y) {
         this.y = y;
+    }
+
+    public void setPoint(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public void setPoint(Point2d other) {
+        this.x = other.x;
+        this.y = other.y;
     }
 
     public double get_x() {

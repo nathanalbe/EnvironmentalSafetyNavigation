@@ -39,7 +39,7 @@ public class OpenCvViewRenderer
     private final int statBoxLTxtMargin;
     private static final float referenceDPI = 443; // Nexus 5
     private final float metricsScale;
-    private static final int OVERLAY_COLOR = Color.rgb(102, 20, 68);
+    private static final int OVERLAY_COLOR = Color.TRANSPARENT;//Color.rgb(102, 20, 68);
     private static final int PAUSED_COLOR = Color.rgb(255, 166, 0);
     private static final int RC_ACTIVITY_BG_COLOR = Color.rgb(239,239,239);
     private Paint fpsMeterNormalBgPaint;
@@ -210,9 +210,9 @@ public class OpenCvViewRenderer
         int textLine3Y = textLine2Y + statBoxTextLineSpacing;
 
         // Draw the 3 text lines
-        canvas.drawText(fpsMeterDescriptor, statBoxLTxtStart, textLine1Y, fpsMeterTextPaint);
-        canvas.drawText(String.format("FPS@%dx%d: %.2f", width, height, fps), statBoxLTxtStart, textLine2Y, fpsMeterTextPaint);
-        canvas.drawText(String.format("Pipeline: %dms - Overhead: %dms", pipelineMs, overheadMs), statBoxLTxtStart, textLine3Y, fpsMeterTextPaint);
+        //canvas.drawText(fpsMeterDescriptor, statBoxLTxtStart, textLine1Y, fpsMeterTextPaint);
+        //canvas.drawText(String.format("FPS@%dx%d: %.2f", width, height, fps), statBoxLTxtStart, textLine2Y, fpsMeterTextPaint);
+        //canvas.drawText(String.format("Pipeline: %dms - Overhead: %dms", pipelineMs, overheadMs), statBoxLTxtStart, textLine3Y, fpsMeterTextPaint);
     }
 
     Rect createRect(int tlx, int tly, int w, int h)

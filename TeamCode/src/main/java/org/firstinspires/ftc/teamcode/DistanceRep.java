@@ -1,11 +1,29 @@
 package org.firstinspires.ftc.teamcode;
 
+import org.opencv.core.Point;
+
 public class DistanceRep {
     Point2d start_point;
     Point2d end_point;
     double distance;
     double height;
     double width;
+
+    public DistanceRep(Point start_point, Point2d end_point) {
+        this.start_point = new Point2d(start_point);
+        this.end_point = end_point;
+        this.distance = this.start_point.distance(end_point);
+        this.height = 0;
+        this.width = 0;
+    }
+
+    public DistanceRep(Point2d start_point, Point2d end_point) {
+        this.start_point = start_point;
+        this.end_point = end_point;
+        this.distance = start_point.distance(end_point);
+        this.height = 0;
+        this.width = 0;
+    }
 
     public DistanceRep(Point2d start_point, Point2d end_point, double height, double width) {
         this.start_point = start_point;

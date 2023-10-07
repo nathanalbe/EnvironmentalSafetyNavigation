@@ -28,12 +28,15 @@ public class ContourTest implements VisionProcessor {
     public int min_area = 1000;
     public int dilationSize = 18;
 
+    private Point2d pov = new Point2d(0, 0);
+
     @Override
     public void init(int width, int height, CameraCalibration calibration) {
     }
 
     @Override
     public Object processFrame(Mat frame, long captureTimeNanos) {
+        pov.setPoint(frame.width() / 2, frame.height() - 5);
         try {
             // Convert the input frame to grayscale
             Mat grayFrame = new Mat();
@@ -72,18 +75,38 @@ public class ContourTest implements VisionProcessor {
             dilatedEdges.release();
 
             // Draw lines around detected contours on the original frame
+            ArrayList<DistanceRep> distances = new ArrayList<>();
             for (MatOfPoint contour : dilatedContours) {
                 double contourArea = Imgproc.contourArea(contour);
                 if (contourArea < min_area) {
                     continue;
                 }
                 // Find the bounding box of the contour
-                Imgproc.fillPoly(frame, Collections.singletonList(contour), new Scalar(0, 0, 255)); // You can adjust the color here
+                Imgproc.fillPoly(frame, Collections.singletonList(contour), new Scalar(75, 228, 135)); // You can adjust the color here
                 // draw center of each contour
                 Moments moments = Imgproc.moments(contour);
                 Point center = new Point(moments.get_m10() / moments.get_m00(), moments.get_m01() / moments.get_m00());
-                Imgproc.circle(frame, center, 5, new Scalar(0, 255, 0), 2);
+                Imgproc.circle(frame, center, 5, new Scalar(0, 0, 0), 5);
+                distances.add(new DistanceRep(center, pov));
             }
+
+            distances.sort(Comparator.comparingDouble(DistanceRep::get_distance));
+
+            for (int i = 0; i < distances.size() && i < 3; i++) {
+                DistanceRep point = distances.get(i);
+                Scalar color = new Scalar(0, 0, 0);
+                if (i == 0) // closest
+                    color = new Scalar(229, 15, 87);
+                else if (i == 1) // 2nd closest
+                    color = new Scalar(170, 39, 251);
+                else if (i == 2) // 3rd closest
+                    color = new Scalar(75, 196, 245);
+                Imgproc.line(frame, point.get_start_point().toPoint(),
+                        point.get_end_point().toPoint(), color, 6);
+                telemetry.addData(i + ": Distance " + (point.get_distance()) + "in, " +
+                        "Height: " + point.get_height() + ", Width" + point.get_width(), "");
+            }
+
         } catch (Exception e) {
             telemetry.addData("Exception", e.getMessage());
         }
