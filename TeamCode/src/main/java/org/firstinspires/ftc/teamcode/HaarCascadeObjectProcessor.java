@@ -19,6 +19,7 @@ public class HaarCascadeObjectProcessor implements VisionProcessor {
     private Telemetry telemetry;
 
     public int pov_x = 0;
+    public int pov_y = 0;
     public double prop = 0.182353;
 
     public HaarCascadeObjectProcessor(Telemetry telemetry) {
