@@ -81,13 +81,13 @@ public class TestThresholdProcessor implements VisionProcessor {
                 }
             }
 
-            // Draw rectangle around each countour and circle in center of each bounding box
+            // Draw rectangle around each contour and circle in center of each bounding box
             ArrayList<Point2d> centers = new ArrayList<>();
             for (Rect rect : rects) {
                 int x = rect.x + rect.width / 2;
                 int y = rect.y + rect.height / 2;
                 centers.add(new Point2d(x, y));
-                //Imgproc.rectangle(ret, rect, new Scalar(0, 255, 0), 2);
+                Imgproc.rectangle(ret, rect, new Scalar(0, 255, 0), 2);
                 Imgproc.circle(ret, new Point(x, y), 5, new Scalar(0, 0, 255), 5);
             }
 
