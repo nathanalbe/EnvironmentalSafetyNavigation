@@ -165,14 +165,14 @@ public class TestThresholdProcessor implements VisionProcessor {
             DistanceRep leftPoint = closestLeft(closest_points);
             DistanceRep rightPoint = closestRight(closest_points);
 
-            if (leftPoint.get_distance() * prop <= minDistance && leftPoint.get_start_point().get_y() > 750) {
+            if (leftPoint.get_distance() * prop <= minDistance || leftPoint.get_start_point().get_y() > 750) {
                 left = weightedDistance(leftPoint) + weightedYPost(leftPoint);
             } else {
                 left = 0;
             }
 
 
-            if (rightPoint.get_distance() * prop <= minDistance && rightPoint.get_start_point().get_y() > 750) {
+            if (rightPoint.get_distance() * prop <= minDistance || rightPoint.get_start_point().get_y() > 750) {
                 right = weightedDistance(rightPoint) + weightedYPost(rightPoint);
             } else {
                 right = 0;
@@ -180,11 +180,6 @@ public class TestThresholdProcessor implements VisionProcessor {
 
             telemetry.addData("left: ", left);
             telemetry.addData("right: ", right);
-            telemetry.addData("leftWeight: ", weightedDistance(leftPoint));
-            telemetry.addData("leftY: ", weightedYPost(leftPoint));
-            telemetry.addData("rightWeight: ", weightedDistance(rightPoint));
-            telemetry.addData("rightY: ", weightedYPost(rightPoint));
-
 
             ret.copyTo(frame);
         } catch (Exception e) {
