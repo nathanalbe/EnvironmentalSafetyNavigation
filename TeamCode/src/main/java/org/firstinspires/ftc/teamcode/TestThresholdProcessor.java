@@ -21,7 +21,7 @@ public class TestThresholdProcessor implements VisionProcessor {
 
     public float left = 0;
 
-    public final float minDistance = 185.45f;
+    public final float minDistance = 261.538f;
 
     public ColorSpace colorSpace = ColorSpace.HSV;
 
@@ -165,21 +165,25 @@ public class TestThresholdProcessor implements VisionProcessor {
             DistanceRep leftPoint = closestLeft(closest_points);
             DistanceRep rightPoint = closestRight(closest_points);
 
-            if (leftPoint.get_distance() * prop <= minDistance) {
-                left = (float) (leftPoint.get_distance() * prop / minDistance);
+            if (leftPoint.get_distance() * prop <= minDistance && leftPoint.get_start_point().get_y() > 750) {
+                left = weightedDistance(leftPoint) + weightedYPost(leftPoint);
             } else {
                 left = 0;
             }
 
 
-            if (rightPoint.get_distance() * prop <= minDistance) {
-                right = (float) (rightPoint.get_distance() * prop / minDistance);
+            if (rightPoint.get_distance() * prop <= minDistance && rightPoint.get_start_point().get_y() > 750) {
+                right = weightedDistance(rightPoint) + weightedYPost(rightPoint);
             } else {
                 right = 0;
             }
 
             telemetry.addData("left: ", left);
             telemetry.addData("right: ", right);
+            telemetry.addData("leftWeight: ", weightedDistance(leftPoint));
+            telemetry.addData("leftY: ", weightedYPost(leftPoint));
+            telemetry.addData("rightWeight: ", weightedDistance(rightPoint));
+            telemetry.addData("rightY: ", weightedYPost(rightPoint));
 
 
             ret.copyTo(frame);
@@ -190,6 +194,24 @@ public class TestThresholdProcessor implements VisionProcessor {
         telemetry.update();
 
         return null;
+    }
+
+    private float weightedDistance(DistanceRep point) {
+        float distance =
+                (float) ((Math.abs(minDistance - (point.get_distance() * prop)) / minDistance) * 0.40f);
+        if (point.get_distance() * prop < 50) {
+            return 0.3f;
+
+        }
+        return distance;
+    }
+
+    private float weightedYPost(DistanceRep point) {
+        float weight = (float) (Math.abs(pov_y - point.get_start_point().get_y()) / pov_y) * 0.6f;
+        if (point.get_start_point().get_y() >= 800) {
+            return 0.7f;
+        }
+        return weight;
     }
 
     @Override
