@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 public class TestThresholdProcessor implements VisionProcessor {
-    public Scalar lower = new Scalar(28.3, 77.9, 0.0);
+    public Scalar lower = new Scalar(29.0, 77.9, 0.0);
     public Scalar upper = new Scalar(51.0, 255.0, 255.0);
 
     public int pov_x = 0;
@@ -26,6 +26,8 @@ public class TestThresholdProcessor implements VisionProcessor {
     private Mat ret = new Mat();
 
     public int rect_threshold = 5000;
+
+    public double prop = 0.182353;
 
     private Telemetry telemetry = null;
 
@@ -89,25 +91,28 @@ public class TestThresholdProcessor implements VisionProcessor {
                 //int x = rects.get(i).x + rects.get(i).width;
                 //int y = rects.get(i).y + rects.get(i).height;
 
+                int height = rects.get(i).height;
+                int width = rects.get(i).width;
+
                 ArrayList<DistanceRep> bb_points = new ArrayList<>();
                 //add all points along the top edge of the bounding box
                 for (int x = rects.get(i).x; x < rects.get(i).x + rects.get(i).width; x+=10) {
-                    bb_points.add(new DistanceRep(new Point2d(x, rects.get(i).y), new Point2d(pov_x, pov_y)));
+                    bb_points.add(new DistanceRep(new Point2d(x, rects.get(i).y), new Point2d(pov_x, pov_y), height, width));
                 }
 
                 //add all points along the bottom edge of the bounding box
                 for (int x = rects.get(i).x; x < rects.get(i).x + rects.get(i).width; x+=10) {
-                    bb_points.add(new DistanceRep(new Point2d(x, rects.get(i).y + rects.get(i).height), new Point2d(pov_x, pov_y)));
+                    bb_points.add(new DistanceRep(new Point2d(x, rects.get(i).y + rects.get(i).height), new Point2d(pov_x, pov_y), height, width));
                 }
 
                 //add all points along the left edge of the bounding box
                 for (int y = rects.get(i).y; y < rects.get(i).y + rects.get(i).height; y+=10) {
-                    bb_points.add(new DistanceRep(new Point2d(rects.get(i).x, y), new Point2d(pov_x, pov_y)));
+                    bb_points.add(new DistanceRep(new Point2d(rects.get(i).x, y), new Point2d(pov_x, pov_y), height, width));
                 }
 
                 //add all points along the right edge of the bounding box
                 for (int y = rects.get(i).y; y < rects.get(i).y + rects.get(i).height; y+=10) {
-                    bb_points.add(new DistanceRep(new Point2d(rects.get(i).x + rects.get(i).width, y), new Point2d(pov_x, pov_y)));
+                    bb_points.add(new DistanceRep(new Point2d(rects.get(i).x + rects.get(i).width, y), new Point2d(pov_x, pov_y), height, width));
                 }
 
                 bb_points.sort(Comparator.comparingDouble(DistanceRep::get_distance));
@@ -141,7 +146,7 @@ public class TestThresholdProcessor implements VisionProcessor {
                 else if (i == 2) // 3rd closest
                     color = new Scalar(0, 0, 255);
                 Imgproc.line(ret, point.get_start_point().toPoint(), point.get_end_point().toPoint(), color, 2);
-                telemetry.addData(i + ": " + point.get_distance(), "");
+                telemetry.addData(i + ": Distance " + (point.get_distance() * prop) + "in, Height: " + point.get_height() + ", Width" + point.get_width(), "");
             }
 
             ret.copyTo(frame);
