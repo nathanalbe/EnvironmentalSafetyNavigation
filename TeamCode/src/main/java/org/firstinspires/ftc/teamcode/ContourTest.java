@@ -6,6 +6,7 @@ import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibra
 import org.firstinspires.ftc.vision.VisionProcessor;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.imgproc.Moments;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,11 +44,13 @@ public class ContourTest implements VisionProcessor {
         // Perform edge detection using Canny with adjusted threshold values
         Mat edges = new Mat();
         Imgproc.Canny(grayFrame, edges, canny_threshold1, canny_threshold2); // Adjust threshold values as needed
+        grayFrame.release();
 
         // Apply morphological operations with adjusted kernel sizes and shapes
         Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(filter_size, filter_size));
         Imgproc.dilate(edges, edges, kernel);
         Imgproc.erode(edges, edges, kernel);
+        kernel.release();
 
         // Find contours in the binary image
         List<MatOfPoint> contours = new ArrayList<>();
@@ -57,12 +60,15 @@ public class ContourTest implements VisionProcessor {
         Mat dilatedEdges = new Mat();
         Mat dilateKernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(dilationSize, dilationSize));
         Imgproc.dilate(edges, dilatedEdges, dilateKernel);
+        dilateKernel.release();
         Core.bitwise_or(dilatedEdges, edges, dilatedEdges);
         Core.bitwise_not(dilatedEdges, dilatedEdges);
+        edges.release();
 
         // Find contours in the dilated binary image
         List<MatOfPoint> dilatedContours = new ArrayList<>();
         Imgproc.findContours(dilatedEdges, dilatedContours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        dilatedEdges.release();
 
         // Draw lines around detected contours on the original frame
         for (MatOfPoint contour : dilatedContours) {
@@ -70,17 +76,13 @@ public class ContourTest implements VisionProcessor {
             if (contourArea < min_area) {
                 continue;
             }
-
             // Find the bounding box of the contour
-            Imgproc.fillPoly(frame, Collections.singletonList(contour), new Scalar(0, 255, 0)); // You can adjust the color here
+            Imgproc.fillPoly(frame, Collections.singletonList(contour), new Scalar(0, 0, 255)); // You can adjust the color here
+            // draw center of each contour
+            Moments moments = Imgproc.moments(contour);
+            Point center = new Point(moments.get_m10() / moments.get_m00(), moments.get_m01() / moments.get_m00());
+            Imgproc.circle(frame, center, 5, new Scalar(0, 255, 0), 2);
         }
-
-        // Release resources
-        grayFrame.release();
-        edges.release();
-        kernel.release();
-        dilatedEdges.release();
-        dilateKernel.release();
 
         telemetry.update();
         return null;
