@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import org.opencv.core.Point;
 
-class Point2d {
+public class Point2d {
     public double x;
     public double y;
 
