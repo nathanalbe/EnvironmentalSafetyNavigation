@@ -13,13 +13,13 @@ import org.opencv.core.*;
 import java.util.ArrayList;
 
 public class TestThresholdProcessor implements VisionProcessor {
-    public Scalar lower = new Scalar(0, 0, 0);
-    public Scalar upper = new Scalar(255.0, 255.0, 255);
+    public Scalar lower = new Scalar(29.8, 119, 36.8);
+    public Scalar upper = new Scalar(46.8, 229.5, 181.3);
 
     public int pov_x = 0;
     public int pov_y = 0;
 
-    public ColorSpace colorSpace = ColorSpace.Lab;
+    public ColorSpace colorSpace = ColorSpace.HSV;
 
     private Mat mat = new Mat();
     private Mat ret = new Mat();
