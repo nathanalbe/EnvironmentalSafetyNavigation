@@ -21,8 +21,8 @@ public class TestThresholdProcessor implements VisionProcessor {
 
     public float left = 0;
 
-    public final float minDistance = 261.538f;
-
+    public final float minDistance = 100f;
+    //261.538f
     public ColorSpace colorSpace = ColorSpace.HSV;
 
     private Mat mat = new Mat();
@@ -165,16 +165,17 @@ public class TestThresholdProcessor implements VisionProcessor {
             DistanceRep leftPoint = closestLeft(closest_points);
             DistanceRep rightPoint = closestRight(closest_points);
 
-            if (leftPoint.get_distance() * prop <= minDistance || leftPoint.get_start_point().get_y() > 750) {
+
+            if (leftPoint.get_distance() * prop <= minDistance && leftPoint.get_start_point().get_y() > pov_y/2.0) {
                 left = weightedDistance(leftPoint) + weightedYPost(leftPoint);
-            } else {
+            }else{
                 left = 0;
             }
 
 
-            if (rightPoint.get_distance() * prop <= minDistance || rightPoint.get_start_point().get_y() > 750) {
+            if (rightPoint.get_distance() * prop <= minDistance && rightPoint.get_start_point().get_y() > pov_y/2.0) {
                 right = weightedDistance(rightPoint) + weightedYPost(rightPoint);
-            } else {
+            }else{
                 right = 0;
             }
 
@@ -195,7 +196,7 @@ public class TestThresholdProcessor implements VisionProcessor {
         float distance =
                 (float) ((Math.abs(minDistance - (point.get_distance() * prop)) / minDistance) * 0.40f);
         if (point.get_distance() * prop < 50) {
-            return 0.3f;
+            return 0.4f;
 
         }
         return distance;
@@ -204,7 +205,7 @@ public class TestThresholdProcessor implements VisionProcessor {
     private float weightedYPost(DistanceRep point) {
         float weight = (float) (Math.abs(pov_y - point.get_start_point().get_y()) / pov_y) * 0.6f;
         if (point.get_start_point().get_y() >= 800) {
-            return 0.7f;
+            return 0.6f;
         }
         return weight;
     }
