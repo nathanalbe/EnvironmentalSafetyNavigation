@@ -11,8 +11,6 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.core.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class TestThresholdProcessor implements VisionProcessor {
 
@@ -28,52 +26,6 @@ public class TestThresholdProcessor implements VisionProcessor {
     private Mat ret = new Mat();
 
     private Telemetry telemetry = null;
-
-    enum ColorSpace {
-        /*
-         * Define our "conversion codes" in the enum
-         * so that we don't have to do a switch
-         * statement in the processFrame method.
-         */
-        RGB(Imgproc.COLOR_RGBA2RGB),
-        HSV(Imgproc.COLOR_RGB2HSV),
-        YCrCb(Imgproc.COLOR_RGB2YCrCb),
-        Lab(Imgproc.COLOR_RGB2Lab);
-
-        //store cvtCode in a public var
-        public int cvtCode = 0;
-
-        //constructor to be used by enum declarations above
-        ColorSpace(int cvtCode) {
-            this.cvtCode = cvtCode;
-        }
-    }
-
-    class Point2d {
-        public double x;
-        public double y;
-
-        public Point2d(double x, double y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        public void set_x(double x) {
-            this.x = x;
-        }
-
-        public void set_y(double y) {
-            this.y = y;
-        }
-
-        public double get_x() {
-            return this.x;
-        }
-
-        public double get_y() {
-            return this.y;
-        }
-    }
 
     public TestThresholdProcessor(Telemetry telemetry) {
         this.telemetry = telemetry;
