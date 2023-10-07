@@ -4,11 +4,8 @@ import android.graphics.Canvas;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
 import org.firstinspires.ftc.vision.VisionProcessor;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
 import org.opencv.core.*;
+import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -19,6 +16,12 @@ public class TestThresholdProcessor implements VisionProcessor {
 
     public int pov_x = 0;
     public int pov_y = 0;
+
+    public float right = 0;
+
+    public float left = 0;
+
+    public final float minDistance = 185.45f;
 
     public ColorSpace colorSpace = ColorSpace.HSV;
 
@@ -65,7 +68,8 @@ public class TestThresholdProcessor implements VisionProcessor {
             // Find contours
             ArrayList<MatOfPoint> contours = new ArrayList<>();
             Mat hierarchy = new Mat();
-            Imgproc.findContours(mask, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+            Imgproc.findContours(mask, contours, hierarchy, Imgproc.RETR_TREE,
+                    Imgproc.CHAIN_APPROX_SIMPLE);
 
             //telemetry.addData("Contours", contours.size());
 
@@ -87,7 +91,8 @@ public class TestThresholdProcessor implements VisionProcessor {
             ArrayList<DistanceRep> closest_points = new ArrayList<>();
             for (int i = 0; i < rects.size(); i++) {
                 //Imgproc.rectangle(ret, rects.get(i), new Scalar(0, 255, 0), 2);
-                //telemetry.addData(i + ": (" + rects.get(i).x + ", " + rects.get(i).y + "), Area: " + rects.get(i).area(), "");
+                //telemetry.addData(i + ": (" + rects.get(i).x + ", " + rects.get(i).y + "),
+                // Area: " + rects.get(i).area(), "");
                 //int x = rects.get(i).x + rects.get(i).width;
                 //int y = rects.get(i).y + rects.get(i).height;
 
@@ -96,23 +101,28 @@ public class TestThresholdProcessor implements VisionProcessor {
 
                 ArrayList<DistanceRep> bb_points = new ArrayList<>();
                 //add all points along the top edge of the bounding box
-                for (int x = rects.get(i).x; x < rects.get(i).x + rects.get(i).width; x+=10) {
-                    bb_points.add(new DistanceRep(new Point2d(x, rects.get(i).y), new Point2d(pov_x, pov_y), height, width));
+                for (int x = rects.get(i).x; x < rects.get(i).x + rects.get(i).width; x += 10) {
+                    bb_points.add(new DistanceRep(new Point2d(x, rects.get(i).y),
+                            new Point2d(pov_x, pov_y), height, width));
                 }
 
                 //add all points along the bottom edge of the bounding box
-                for (int x = rects.get(i).x; x < rects.get(i).x + rects.get(i).width; x+=10) {
-                    bb_points.add(new DistanceRep(new Point2d(x, rects.get(i).y + rects.get(i).height), new Point2d(pov_x, pov_y), height, width));
+                for (int x = rects.get(i).x; x < rects.get(i).x + rects.get(i).width; x += 10) {
+                    bb_points.add(new DistanceRep(new Point2d(x,
+                            rects.get(i).y + rects.get(i).height), new Point2d(pov_x, pov_y),
+                            height, width));
                 }
 
                 //add all points along the left edge of the bounding box
-                for (int y = rects.get(i).y; y < rects.get(i).y + rects.get(i).height; y+=10) {
-                    bb_points.add(new DistanceRep(new Point2d(rects.get(i).x, y), new Point2d(pov_x, pov_y), height, width));
+                for (int y = rects.get(i).y; y < rects.get(i).y + rects.get(i).height; y += 10) {
+                    bb_points.add(new DistanceRep(new Point2d(rects.get(i).x, y),
+                            new Point2d(pov_x, pov_y), height, width));
                 }
 
                 //add all points along the right edge of the bounding box
-                for (int y = rects.get(i).y; y < rects.get(i).y + rects.get(i).height; y+=10) {
-                    bb_points.add(new DistanceRep(new Point2d(rects.get(i).x + rects.get(i).width, y), new Point2d(pov_x, pov_y), height, width));
+                for (int y = rects.get(i).y; y < rects.get(i).y + rects.get(i).height; y += 10) {
+                    bb_points.add(new DistanceRep(new Point2d(rects.get(i).x + rects.get(i).width
+                            , y), new Point2d(pov_x, pov_y), height, width));
                 }
 
                 bb_points.sort(Comparator.comparingDouble(DistanceRep::get_distance));
@@ -120,7 +130,7 @@ public class TestThresholdProcessor implements VisionProcessor {
                 closest_points.add(bb_points.get(0));
             }
 
-            for(DistanceRep point : closest_points) {
+            for (DistanceRep point : closest_points) {
                 Imgproc.circle(ret, point.get_start_point().toPoint(), 5, new Scalar(0, 0, 255), 5);
             }
 
@@ -129,7 +139,8 @@ public class TestThresholdProcessor implements VisionProcessor {
 
             // Draw line from pov to each point in closest_points
             /*for (DistanceRep point : closest_points) {
-                Imgproc.line(ret, point.get_start_point().toPoint(), point.get_end_point().toPoint(), new Scalar(255, 0, 0), 2);
+                Imgproc.line(ret, point.get_start_point().toPoint(), point.get_end_point()
+                .toPoint(), new Scalar(255, 0, 0), 2);
             }*/
 
             // Sort closest_points by lowest distance first
@@ -145,9 +156,27 @@ public class TestThresholdProcessor implements VisionProcessor {
                     color = new Scalar(0, 255, 0);
                 else if (i == 2) // 3rd closest
                     color = new Scalar(0, 0, 255);
-                Imgproc.line(ret, point.get_start_point().toPoint(), point.get_end_point().toPoint(), color, 2);
-                telemetry.addData(i + ": Distance " + (point.get_distance() * prop) + "in, Height: " + point.get_height() + ", Width" + point.get_width(), "");
+                Imgproc.line(ret, point.get_start_point().toPoint(),
+                        point.get_end_point().toPoint(), color, 2);
+                telemetry.addData(i + ": Distance " + (point.get_distance() * prop) + "in, " +
+                        "Height: " + point.get_height() + ", Width" + point.get_width(), "");
             }
+
+            DistanceRep leftPoint = closestLeft(closest_points);
+            DistanceRep rightPoint = closestRight(closest_points);
+
+            if (leftPoint.get_distance() <= minDistance) {
+                left = (float) (leftPoint.get_distance() / minDistance);
+
+            }
+
+            if (rightPoint.get_distance() <= minDistance) {
+                right = (float) (rightPoint.get_distance() / minDistance);
+            }
+
+            telemetry.addData("left: ", left);
+            telemetry.addData("right: ", right);
+
 
             ret.copyTo(frame);
         } catch (Exception e) {
@@ -160,6 +189,69 @@ public class TestThresholdProcessor implements VisionProcessor {
     }
 
     @Override
-    public void onDrawFrame(Canvas canvas, int onscreenWidth, int onscreenHeight, float scaleBmpPxToCanvasPx, float scaleCanvasDensity, Object userContext) {
+    public void onDrawFrame(Canvas canvas, int onscreenWidth, int onscreenHeight,
+                            float scaleBmpPxToCanvasPx, float scaleCanvasDensity,
+                            Object userContext) {
+    }
+
+    private DistanceRep closestRight(ArrayList<DistanceRep> closest_points) {
+        int index = -1;
+        DistanceRep closest = new DistanceRep(new Point2d(0, 0), new Point2d(0, 0), 0, 0);
+        for (int i = 0; i < closest_points.size(); i++) {
+            if (isRight(closest_points.get(i))) {
+                closest = closest_points.get(i);
+                index = i;
+                break;
+            }
+        }
+
+        if (index == -1) {
+            return closest;
+        }
+
+        for (int i = index; i < closest_points.size(); i++) {
+            if (isRight(closest_points.get(i))) {
+                if (closest_points.get(i).get_distance() < closest.get_distance()) {
+                    closest = closest_points.get(i);
+                }
+
+            }
+        }
+        return closest;
+    }
+
+    private DistanceRep closestLeft(ArrayList<DistanceRep> closest_points) {
+        int index = -1;
+        DistanceRep closest = new DistanceRep(new Point2d(0, 0), new Point2d(0, 0), 0, 0);
+        for (int i = 0; i < closest_points.size(); i++) {
+            if (isLeft(closest_points.get(i))) {
+                closest = closest_points.get(i);
+                index = i;
+                break;
+            }
+        }
+
+        if (index == -1) {
+            return closest;
+        }
+
+        for (int i = index; i < closest_points.size(); i++) {
+            if (isLeft(closest_points.get(i))) {
+                if (closest_points.get(i).get_distance() < closest.get_distance()) {
+                    closest = closest_points.get(i);
+                }
+
+            }
+        }
+
+        return closest;
+    }
+
+    private boolean isLeft(DistanceRep point) {
+        return point.get_start_point().get_x() <= pov_x;
+    }
+
+    private boolean isRight(DistanceRep point) {
+        return point.get_start_point().get_x() >= pov_x;
     }
 }
