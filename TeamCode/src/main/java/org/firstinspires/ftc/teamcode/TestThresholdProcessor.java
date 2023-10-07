@@ -13,8 +13,8 @@ import org.opencv.core.*;
 import java.util.ArrayList;
 
 public class TestThresholdProcessor implements VisionProcessor {
-    public Scalar lower = new Scalar(0, 137.4, 164.3);
-    public Scalar upper = new Scalar(255, 172.8, 255);
+    public Scalar lower = new Scalar(0, 0, 0);
+    public Scalar upper = new Scalar(255.0, 255.0, 255);
 
     public int pov_x = 0;
     public int pov_y = 0;
@@ -23,6 +23,8 @@ public class TestThresholdProcessor implements VisionProcessor {
 
     private Mat mat = new Mat();
     private Mat ret = new Mat();
+
+    public int rect_threshold = 1000;
 
     private Telemetry telemetry = null;
 
@@ -68,6 +70,15 @@ public class TestThresholdProcessor implements VisionProcessor {
             ArrayList<Rect> rects = new ArrayList<>();
             for (MatOfPoint contour : contours) {
                 rects.add(Imgproc.boundingRect(contour));
+            }
+
+            // Remove all rects whose area is less than rect_threshold
+            for (int i = 0; i < rects.size(); i++) {
+                Rect rect = rects.get(i);
+                if (rect.area() < rect_threshold) {
+                    rects.remove(i);
+                    i--;
+                }
             }
 
             // Draw rectangle around each countour and circle in center of each bounding box
