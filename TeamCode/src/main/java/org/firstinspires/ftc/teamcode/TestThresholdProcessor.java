@@ -159,19 +159,23 @@ public class TestThresholdProcessor implements VisionProcessor {
                 Imgproc.line(ret, point.get_start_point().toPoint(),
                         point.get_end_point().toPoint(), color, 2);
                 telemetry.addData(i + ": Distance " + (point.get_distance() * prop) + "in, " +
-                        "Height: " + point.get_height() + ", Width" + point.get_width(), "");
+                        "Height: " + point.get_height() * prop + ", Width" + point.get_width() * prop, "");
             }
 
             DistanceRep leftPoint = closestLeft(closest_points);
             DistanceRep rightPoint = closestRight(closest_points);
 
-            if (leftPoint.get_distance() <= minDistance) {
-                left = (float) (leftPoint.get_distance() / minDistance);
-
+            if (leftPoint.get_distance() * prop <= minDistance) {
+                left = (float) (leftPoint.get_distance() * prop / minDistance);
+            } else {
+                left = 0;
             }
 
-            if (rightPoint.get_distance() <= minDistance) {
-                right = (float) (rightPoint.get_distance() / minDistance);
+
+            if (rightPoint.get_distance() * prop <= minDistance) {
+                right = (float) (rightPoint.get_distance() * prop / minDistance);
+            } else {
+                right = 0;
             }
 
             telemetry.addData("left: ", left);
