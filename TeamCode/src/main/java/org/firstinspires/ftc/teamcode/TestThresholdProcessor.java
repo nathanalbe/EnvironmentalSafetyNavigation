@@ -165,13 +165,11 @@ public class TestThresholdProcessor implements VisionProcessor {
             DistanceRep leftPoint = closestLeft(closest_points);
             DistanceRep rightPoint = closestRight(closest_points);
 
-
             if (leftPoint.get_distance() * prop <= minDistance && leftPoint.get_start_point().get_y() > pov_y/2.0) {
                 left = weightedDistance(leftPoint) + weightedYPost(leftPoint);
             }else{
                 left = 0;
             }
-
 
             if (rightPoint.get_distance() * prop <= minDistance && rightPoint.get_start_point().get_y() > pov_y/2.0) {
                 right = weightedDistance(rightPoint) + weightedYPost(rightPoint);
@@ -181,6 +179,8 @@ public class TestThresholdProcessor implements VisionProcessor {
 
             telemetry.addData("left: ", left);
             telemetry.addData("right: ", right);
+
+            displayBars(left, right, ret);
 
             ret.copyTo(frame);
         } catch (Exception e) {
@@ -275,5 +275,34 @@ public class TestThresholdProcessor implements VisionProcessor {
 
     private boolean isRight(DistanceRep point) {
         return point.get_start_point().get_x() >= pov_x;
+    }
+
+    private void displayBars(float left, float right, Mat frame) {
+        // left and right will be a value from [0.0, 1.0],
+        // draw 2 filled verticle rectangles on the top right corner of the sreen that represent the values
+        // they should be 100px tall and 50px wide
+
+        int bar_width = 50;
+        int bar_height = 120;
+
+        //left bar
+        int left_bar_x = frame.width() - bar_width * 2;
+        int left_bar_y = 0;
+        int left_bar_fill_height = (int) (left * bar_height);
+        int left_bar_fill_y = bar_height - left_bar_fill_height;
+        Imgproc.rectangle(frame, new Point(left_bar_x, left_bar_y), new Point(left_bar_x + bar_width, left_bar_y + bar_height), new Scalar(0, 0, 0), -1);
+
+        //right bar
+        int right_bar_x = frame.width() - bar_width;
+        int right_bar_y = 0;
+        int right_bar_fill_height = (int) (right * bar_height);
+        int right_bar_fill_y = bar_height - right_bar_fill_height;
+        Imgproc.rectangle(frame, new Point(right_bar_x, right_bar_y), new Point(right_bar_x + bar_width, right_bar_y + bar_height), new Scalar(0, 0, 0), -1);
+
+        // fill left bar
+        Imgproc.rectangle(frame, new Point(left_bar_x, left_bar_y + left_bar_fill_y), new Point(left_bar_x + bar_width, left_bar_y + bar_height), new Scalar(229, 15, 87), -1);
+
+        // fill right bar
+        Imgproc.rectangle(frame, new Point(right_bar_x, right_bar_y + right_bar_fill_y), new Point(right_bar_x + bar_width, right_bar_y + bar_height), new Scalar(19, 122, 227), -1);
     }
 }

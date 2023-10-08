@@ -28,6 +28,13 @@ public class ContourTest implements VisionProcessor {
     public int min_area = 1000;
     public int dilationSize = 18;
 
+    public final float minDistance = 300f;
+    public double prop = 0.182353;
+
+    public float right = 0;
+    public float left = 0;
+
+
     private Point2d pov = new Point2d(0, 0);
 
     @Override
@@ -36,7 +43,7 @@ public class ContourTest implements VisionProcessor {
 
     @Override
     public Object processFrame(Mat frame, long captureTimeNanos) {
-        pov.setPoint(frame.width() / 2, frame.height() - 5);
+        pov.setPoint(frame.width() / 2, frame.height() - 10);
         try {
             // Convert the input frame to grayscale
             Mat grayFrame = new Mat();
@@ -82,7 +89,7 @@ public class ContourTest implements VisionProcessor {
                     continue;
                 }
                 // Find the bounding box of the contour
-                Imgproc.fillPoly(frame, Collections.singletonList(contour), new Scalar(75, 228, 135)); // You can adjust the color here
+                Imgproc.fillPoly(frame, Collections.singletonList(contour), new Scalar(29, 148, 47, 0.05));
                 // draw center of each contour
                 Moments moments = Imgproc.moments(contour);
                 Point center = new Point(moments.get_m10() / moments.get_m00(), moments.get_m01() / moments.get_m00());
@@ -90,7 +97,10 @@ public class ContourTest implements VisionProcessor {
                 distances.add(new DistanceRep(center, pov));
             }
 
-            distances.sort(Comparator.comparingDouble(DistanceRep::get_distance));
+            //compare distances
+            ////distances.sort(Comparator.comparingDouble(DistanceRep::get_distance));
+            //compare distances by start point y value
+            distances.sort((o1, o2) -> (int) -(o1.get_start_point().y - o2.get_start_point().y));
 
             for (int i = 0; i < distances.size() && i < 3; i++) {
                 DistanceRep point = distances.get(i);
@@ -98,14 +108,34 @@ public class ContourTest implements VisionProcessor {
                 if (i == 0) // closest
                     color = new Scalar(229, 15, 87);
                 else if (i == 1) // 2nd closest
-                    color = new Scalar(170, 39, 251);
-                else if (i == 2) // 3rd closest
                     color = new Scalar(75, 196, 245);
+                else if (i == 2) // 3rd closest
+                    color = new Scalar(170, 39, 251);
                 Imgproc.line(frame, point.get_start_point().toPoint(),
-                        point.get_end_point().toPoint(), color, 6);
+                        point.get_end_point().toPoint(), color, 10);
                 telemetry.addData(i + ": Distance " + (point.get_distance()) + "in, " +
                         "Height: " + point.get_height() + ", Width" + point.get_width(), "");
             }
+
+            DistanceRep leftPoint = closestLeft(distances);
+            DistanceRep rightPoint = closestRight(distances);
+
+            if (leftPoint.get_distance() * prop <= minDistance && leftPoint.get_start_point().get_y() > pov.y/2.0) {
+                left = weightedDistance(leftPoint) + weightedYPost(leftPoint);
+            }else{
+                left = 0;
+            }
+
+            if (rightPoint.get_distance() * prop <= minDistance && rightPoint.get_start_point().get_y() > pov.y/2.0) {
+                right = weightedDistance(rightPoint) + weightedYPost(rightPoint);
+            }else{
+                right = 0;
+            }
+
+            telemetry.addData("left: ", left);
+            telemetry.addData("right: ", right);
+
+            displayBars(left, right, frame);
 
         } catch (Exception e) {
             telemetry.addData("Exception", e.getMessage());
@@ -115,7 +145,117 @@ public class ContourTest implements VisionProcessor {
         return null;
     }
 
+    private float weightedDistance(DistanceRep point) {
+        float distance =
+                (float) ((Math.abs(minDistance - (point.get_distance() * prop)) / minDistance) * 0.40f);
+        if (point.get_distance() * prop < 50) {
+            return 0.4f;
+
+        }
+        return distance;
+    }
+
+    private float weightedYPost(DistanceRep point) {
+        float weight = (float) (Math.abs(pov.y - point.get_start_point().get_y()) / pov.y) * 0.6f;
+        if (point.get_start_point().get_y() >= 800) {
+            return 0.6f;
+        }
+        return weight;
+    }
+
     @Override
-    public void onDrawFrame(Canvas canvas, int onscreenWidth, int onscreenHeight, float scaleBmpPxToCanvasPx, float scaleCanvasDensity, Object userContext) {
+    public void onDrawFrame(Canvas canvas, int onscreenWidth, int onscreenHeight,
+                            float scaleBmpPxToCanvasPx, float scaleCanvasDensity,
+                            Object userContext) {
+    }
+
+    private DistanceRep closestRight(ArrayList<DistanceRep> closest_points) {
+        int index = -1;
+        DistanceRep closest = new DistanceRep(new Point2d(0, 0), new Point2d(0, 0), 0, 0);
+        for (int i = 0; i < closest_points.size(); i++) {
+            if (isRight(closest_points.get(i))) {
+                closest = closest_points.get(i);
+                index = i;
+                break;
+            }
+        }
+
+        if (index == -1) {
+            return closest;
+        }
+
+        for (int i = index; i < closest_points.size(); i++) {
+            if (isRight(closest_points.get(i))) {
+                if (closest_points.get(i).get_distance() < closest.get_distance()) {
+                    closest = closest_points.get(i);
+                }
+
+            }
+        }
+        return closest;
+    }
+
+    private DistanceRep closestLeft(ArrayList<DistanceRep> closest_points) {
+        int index = -1;
+        DistanceRep closest = new DistanceRep(new Point2d(0, 0), new Point2d(0, 0), 0, 0);
+        for (int i = 0; i < closest_points.size(); i++) {
+            if (isLeft(closest_points.get(i))) {
+                closest = closest_points.get(i);
+                index = i;
+                break;
+            }
+        }
+
+        if (index == -1) {
+            return closest;
+        }
+
+        for (int i = index; i < closest_points.size(); i++) {
+            if (isLeft(closest_points.get(i))) {
+                if (closest_points.get(i).get_distance() < closest.get_distance()) {
+                    closest = closest_points.get(i);
+                }
+
+            }
+        }
+
+        return closest;
+    }
+
+    private boolean isLeft(DistanceRep point) {
+        return point.get_start_point().get_x() <= pov.x;
+    }
+
+    private boolean isRight(DistanceRep point) {
+        return point.get_start_point().get_x() >= pov.x;
+    }
+
+    private void displayBars(float left, float right, Mat frame) {
+        // left and right will be a value from [0.0, 1.0],
+        // draw 2 filled verticle rectangles on the top right corner of the sreen that represent the values
+        // they should be 100px tall and 50px wide
+
+        int bar_width = 50;
+        int bar_height = 120;
+
+        //left bar
+        int left_bar_x = frame.width() - bar_width * 2;
+        int left_bar_y = 0;
+        int left_bar_fill_height = (int) (left * bar_height);
+        int left_bar_fill_y = bar_height - left_bar_fill_height;
+        Imgproc.rectangle(frame, new Point(left_bar_x, left_bar_y), new Point(left_bar_x + bar_width, left_bar_y + bar_height), new Scalar(0, 0, 0, 0.0), -1);
+
+        //right bar
+        int right_bar_x = frame.width() - bar_width;
+        int right_bar_y = 0;
+        int right_bar_fill_height = (int) (right * bar_height);
+        int right_bar_fill_y = bar_height - right_bar_fill_height;
+        Imgproc.rectangle(frame, new Point(right_bar_x, right_bar_y), new Point(right_bar_x + bar_width, right_bar_y + bar_height), new Scalar(0, 0, 0, 0.0), -1);
+
+        // fill left bar
+        Imgproc.rectangle(frame, new Point(left_bar_x, left_bar_y + left_bar_fill_y), new Point(left_bar_x + bar_width, left_bar_y + bar_height), new Scalar(255, 0, 0, 1.0), -1);
+
+        // fill right bar
+        Imgproc.rectangle(frame, new Point(right_bar_x, right_bar_y + right_bar_fill_y), new Point(right_bar_x + bar_width, right_bar_y + bar_height), new Scalar(0, 0, 255, 1.0), -1);
     }
 }
