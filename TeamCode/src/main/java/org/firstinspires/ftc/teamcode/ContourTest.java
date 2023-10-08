@@ -26,7 +26,8 @@ public class ContourTest implements VisionProcessor {
     public int canny_threshold2 = 75;
     public int filter_size = 5;
     public int min_area = 2500;
-    public int dilationSize = 18;
+    public int max_area = 360000;
+    public int dilationSize = 12;
 
     public final float minDistance = 300f;
     public double prop = 0.182353;
@@ -84,7 +85,7 @@ public class ContourTest implements VisionProcessor {
             ArrayList<DistanceRep> distances = new ArrayList<>();
             for (MatOfPoint contour : dilatedContours) {
                 double contourArea = Imgproc.contourArea(contour);
-                if (contourArea < min_area) {
+                if (contourArea < min_area || contourArea > max_area) {
                     continue;
                 }
                 // Find the bounding box of the contour
