@@ -31,15 +31,13 @@ public class ContourTest implements VisionProcessor {
     public final float minDistance = 300f;
     public double prop = 0.182353;
 
-    public float right = 0;
-    public float left = 0;
+    public int bar_width = 50;
+    public int bar_height = 120;
 
-
-    private Point2d pov = new Point2d(0, 0);
+    private final Point2d pov = new Point2d(0, 0);
 
     @Override
-    public void init(int width, int height, CameraCalibration calibration) {
-    }
+    public void init(int width, int height, CameraCalibration calibration) {}
 
     @Override
     public Object processFrame(Mat frame, long captureTimeNanos) {
@@ -50,7 +48,8 @@ public class ContourTest implements VisionProcessor {
             Imgproc.cvtColor(frame, grayFrame, Imgproc.COLOR_RGBA2GRAY);
 
             // Apply Gaussian blur with a larger kernel for noise reduction
-            if (blur != 0) Imgproc.GaussianBlur(grayFrame, grayFrame, new Size(blur, blur), 0); // Adjust kernel size as needed
+            if (blur != 0)
+                Imgproc.GaussianBlur(grayFrame, grayFrame, new Size(blur, blur), 0); // Adjust kernel size as needed
 
             // Perform edge detection using Canny with adjusted threshold values
             Mat edges = new Mat();
@@ -120,15 +119,17 @@ public class ContourTest implements VisionProcessor {
             DistanceRep leftPoint = closestLeft(distances);
             DistanceRep rightPoint = closestRight(distances);
 
-            if (leftPoint.get_distance() * prop <= minDistance && leftPoint.get_start_point().get_y() > pov.y/2.0) {
+            float left = 0;
+            if (leftPoint.get_distance() * prop <= minDistance && leftPoint.get_start_point().get_y() > pov.y / 2.0) {
                 left = weightedDistance(leftPoint) + weightedYPost(leftPoint);
-            }else{
+            } else {
                 left = 0;
             }
 
-            if (rightPoint.get_distance() * prop <= minDistance && rightPoint.get_start_point().get_y() > pov.y/2.0) {
+            float right = 0;
+            if (rightPoint.get_distance() * prop <= minDistance && rightPoint.get_start_point().get_y() > pov.y / 2.0) {
                 right = weightedDistance(rightPoint) + weightedYPost(rightPoint);
-            }else{
+            } else {
                 right = 0;
             }
 
@@ -189,7 +190,6 @@ public class ContourTest implements VisionProcessor {
                 if (closest_points.get(i).get_distance() < closest.get_distance()) {
                     closest = closest_points.get(i);
                 }
-
             }
         }
         return closest;
@@ -215,7 +215,6 @@ public class ContourTest implements VisionProcessor {
                 if (closest_points.get(i).get_distance() < closest.get_distance()) {
                     closest = closest_points.get(i);
                 }
-
             }
         }
 
@@ -231,31 +230,22 @@ public class ContourTest implements VisionProcessor {
     }
 
     private void displayBars(float left, float right, Mat frame) {
-        // left and right will be a value from [0.0, 1.0],
-        // draw 2 filled verticle rectangles on the top right corner of the sreen that represent the values
-        // they should be 100px tall and 50px wide
-
-        int bar_width = 50;
-        int bar_height = 120;
-
         //left bar
         int left_bar_x = frame.width() - bar_width * 2;
-        int left_bar_y = 0;
         int left_bar_fill_height = (int) (left * bar_height);
         int left_bar_fill_y = bar_height - left_bar_fill_height;
-        Imgproc.rectangle(frame, new Point(left_bar_x, left_bar_y), new Point(left_bar_x + bar_width, left_bar_y + bar_height), new Scalar(0, 0, 0, 0.0), -1);
+        Imgproc.rectangle(frame, new Point(left_bar_x, 0), new Point(left_bar_x + bar_width, bar_height), new Scalar(0, 0, 0, 0.0), -1);
 
         //right bar
         int right_bar_x = frame.width() - bar_width;
-        int right_bar_y = 0;
         int right_bar_fill_height = (int) (right * bar_height);
         int right_bar_fill_y = bar_height - right_bar_fill_height;
-        Imgproc.rectangle(frame, new Point(right_bar_x, right_bar_y), new Point(right_bar_x + bar_width, right_bar_y + bar_height), new Scalar(0, 0, 0, 0.0), -1);
+        Imgproc.rectangle(frame, new Point(right_bar_x, 0), new Point(right_bar_x + bar_width, bar_height), new Scalar(0, 0, 0, 0.0), -1);
 
         // fill left bar
-        Imgproc.rectangle(frame, new Point(left_bar_x, left_bar_y + left_bar_fill_y), new Point(left_bar_x + bar_width, left_bar_y + bar_height), new Scalar(255, 0, 0, 1.0), -1);
+        Imgproc.rectangle(frame, new Point(left_bar_x, left_bar_fill_y), new Point(left_bar_x + bar_width, bar_height), new Scalar(255, 0, 0, 1.0), -1);
 
         // fill right bar
-        Imgproc.rectangle(frame, new Point(right_bar_x, right_bar_y + right_bar_fill_y), new Point(right_bar_x + bar_width, right_bar_y + bar_height), new Scalar(0, 0, 255, 1.0), -1);
+        Imgproc.rectangle(frame, new Point(right_bar_x, right_bar_fill_y), new Point(right_bar_x + bar_width, bar_height), new Scalar(0, 0, 255, 1.0), -1);
     }
 }
