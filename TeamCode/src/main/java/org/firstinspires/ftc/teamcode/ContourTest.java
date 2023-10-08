@@ -26,7 +26,7 @@ public class ContourTest implements VisionProcessor {
     public int canny_threshold2 = 75;
     public int filter_size = 5;
     public int min_area = 2500;
-    public int max_area = 360000;
+    public int max_area = 500000;
     public int dilationSize = 12;
 
     public final float minDistance = 300f;
