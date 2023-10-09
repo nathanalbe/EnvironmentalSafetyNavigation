@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode;
 import android.graphics.Canvas;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
+import org.firstinspires.ftc.teamcode.geometry.Line2d;
+import org.firstinspires.ftc.teamcode.geometry.Point2d;
 import org.firstinspires.ftc.vision.VisionProcessor;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
@@ -10,14 +12,13 @@ import org.opencv.imgproc.Moments;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
-public class ContourTest implements VisionProcessor {
+public class ContourVisionProcessor implements VisionProcessor {
 
     private Telemetry telemetry = null;
 
-    public ContourTest(Telemetry telemetry) {
+    public ContourVisionProcessor(Telemetry telemetry) {
         this.telemetry = telemetry;
     }
 
@@ -82,7 +83,7 @@ public class ContourTest implements VisionProcessor {
             dilatedEdges.release();
 
             // Draw lines around detected contours on the original frame
-            ArrayList<DistanceRep> distances = new ArrayList<>();
+            ArrayList<Line2d> distances = new ArrayList<>();
             for (MatOfPoint contour : dilatedContours) {
                 double contourArea = Imgproc.contourArea(contour);
                 if (contourArea < min_area || contourArea > max_area) {
@@ -94,7 +95,7 @@ public class ContourTest implements VisionProcessor {
                 Moments moments = Imgproc.moments(contour);
                 Point center = new Point(moments.get_m10() / moments.get_m00(), moments.get_m01() / moments.get_m00());
                 Imgproc.circle(frame, center, 5, new Scalar(0, 0, 0), 5);
-                distances.add(new DistanceRep(center, pov));
+                distances.add(new Line2d(center, pov));
             }
 
             //compare distances
@@ -103,7 +104,7 @@ public class ContourTest implements VisionProcessor {
             distances.sort((o1, o2) -> (int) -(o1.get_start_point().y - o2.get_start_point().y));
 
             for (int i = 0; i < distances.size() && i < 3; i++) {
-                DistanceRep point = distances.get(i);
+                Line2d point = distances.get(i);
                 Scalar color = new Scalar(0, 0, 0);
                 if (i == 0) // closest
                     color = new Scalar(229, 15, 87);
@@ -117,8 +118,8 @@ public class ContourTest implements VisionProcessor {
                         "Height: " + point.get_height() + ", Width" + point.get_width(), "");
             }
 
-            DistanceRep leftPoint = closestLeft(distances);
-            DistanceRep rightPoint = closestRight(distances);
+            Line2d leftPoint = closestLeft(distances);
+            Line2d rightPoint = closestRight(distances);
 
             float left = 0;
             if (leftPoint.get_distance() * prop <= minDistance && leftPoint.get_start_point().get_y() > pov.y / 2.0) {
@@ -147,7 +148,7 @@ public class ContourTest implements VisionProcessor {
         return null;
     }
 
-    private float weightedDistance(DistanceRep point) {
+    private float weightedDistance(Line2d point) {
         float distance =
                 (float) ((Math.abs(minDistance - (point.get_distance() * prop)) / minDistance) * 0.40f);
         if (point.get_distance() * prop < 50) {
@@ -157,7 +158,7 @@ public class ContourTest implements VisionProcessor {
         return distance;
     }
 
-    private float weightedYPost(DistanceRep point) {
+    private float weightedYPost(Line2d point) {
         float weight = (float) (Math.abs(pov.y - point.get_start_point().get_y()) / pov.y) * 0.6f;
         if (point.get_start_point().get_y() >= 800) {
             return 0.6f;
@@ -171,9 +172,9 @@ public class ContourTest implements VisionProcessor {
                             Object userContext) {
     }
 
-    private DistanceRep closestRight(ArrayList<DistanceRep> closest_points) {
+    private Line2d closestRight(ArrayList<Line2d> closest_points) {
         int index = -1;
-        DistanceRep closest = new DistanceRep(new Point2d(0, 0), new Point2d(0, 0), 0, 0);
+        Line2d closest = new Line2d(new Point2d(0, 0), new Point2d(0, 0), 0, 0);
         for (int i = 0; i < closest_points.size(); i++) {
             if (isRight(closest_points.get(i))) {
                 closest = closest_points.get(i);
@@ -196,9 +197,9 @@ public class ContourTest implements VisionProcessor {
         return closest;
     }
 
-    private DistanceRep closestLeft(ArrayList<DistanceRep> closest_points) {
+    private Line2d closestLeft(ArrayList<Line2d> closest_points) {
         int index = -1;
-        DistanceRep closest = new DistanceRep(new Point2d(0, 0), new Point2d(0, 0), 0, 0);
+        Line2d closest = new Line2d(new Point2d(0, 0), new Point2d(0, 0), 0, 0);
         for (int i = 0; i < closest_points.size(); i++) {
             if (isLeft(closest_points.get(i))) {
                 closest = closest_points.get(i);
@@ -222,11 +223,11 @@ public class ContourTest implements VisionProcessor {
         return closest;
     }
 
-    private boolean isLeft(DistanceRep point) {
+    private boolean isLeft(Line2d point) {
         return point.get_start_point().get_x() <= pov.x;
     }
 
-    private boolean isRight(DistanceRep point) {
+    private boolean isRight(Line2d point) {
         return point.get_start_point().get_x() >= pov.x;
     }
 
